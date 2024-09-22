@@ -41,19 +41,21 @@ async function handle(ctx: PicGo) {
       if (!img && imgInfo.base64Image) {
         img = Buffer.from(imgInfo.base64Image, "base64")
       }
-      const postConfig = postOptions(img, filename, token, categories)
+      const postConfig = postOptions_v2(img, filename, token, categories)
       const body = await ctx.request<SuperBedResponse, IReqOptionsWithBodyResOnly>(postConfig)
       if (body.err === 0) {
         imgInfo.imgUrl = `https://pic.imgdb.cn/item/${body.ids}`
       } else {
+        ctx.emit("notification", {
+          title: "Upload failed",
+          body: body.msg
+        })
+        ctx.log.error("Upload failed", body.msg)
         throw JSON.stringify(body)
       }
     }
   } catch(e) {
-    ctx.emit("notification", {
-      title: "error",
-      body: String(e)
-    })
+    ctx.log.error("error: ", e)
   }
 }
 
@@ -75,7 +77,28 @@ function postOptions(img: Buffer, filename: string, token: string, categories: s
     url: "https://api.superbed.cn/upload",
     headers: {
       "Content-Type": "multipart/form-data",
-      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.5060.134 Safari/537.36'
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) \
+                     AppleWebKit/537.36 (KHTML, like Gecko)  \
+                     Chrome/103.0.5060.134 Safari/537.36',
+      'host': "api.superbed.cn"
+    },
+    data: formData
+  }
+  return opt
+}
+
+function postOptions_v2(img: Buffer, filename: string, token: string, categories: string) {
+  const formData = new FormData()
+  formData.append("file", img, { filename })
+  formData.append("token", token)
+  formData.append("categories", categories)
+  const opt: IReqOptionsWithBodyResOnly = {
+    method: "POST",
+    url: "https://api.superbed.cn/upload",
+    headers: {
+      'Content-Type': 'multipart/form-data',
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.5060.134 Safari/537.36',
+      'host': "api.superbed.cn"
     },
     data: formData
   }
@@ -106,5 +129,9 @@ function config(ctx: PicGo): IPluginConfig[] {
 }
 
 function log(text: string) {
-  writeFileSync("C:\\Users\\15219\\Desktop\\1.log", text)
+  try {
+    writeFileSync("D:\\programming\\TypeScript\\log_tmp\\1.log", text, )
+  } catch (error) {
+    console.error("Error writing to file:",error)
+  }
 }
