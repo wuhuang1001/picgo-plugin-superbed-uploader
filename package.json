@@ -9,11 +9,7 @@
   "homepage": "https://github.com/wuuconix/picgo-plugin-superbed-uploader",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "tsc -p .",
-    "dev": "tsc -w -p .",
-    "install": "picgo install . && picgo use uploader",
-    "set": "picgo set uploader",
-    "upload":"picgo -d upload D:\\图片\\0-test.jpg"
+    "build": "tsc -p ."
   },
   "keywords": [
     "picgo",
